@@ -46,7 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CajaAhorro.cs" />
-    <Compile Include="Cuenta.cs" />
+    <Compile Include="CuentaBancaria.cs" />
     <Compile Include="CuentaCorriente.cs" />
     <Compile Include="GUI.cs" />
     <Compile Include="Program.cs" />

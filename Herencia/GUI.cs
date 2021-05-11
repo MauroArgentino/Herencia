@@ -20,7 +20,7 @@ namespace Herencia
 		
 		public void pantallaPrincipal()
 		{
-			Console.Clear();
+			//Console.Clear();
 			Console.Write("╔");
 			for (int i = 0; i < Console.WindowWidth - 2; i++) {
 				Console.Write("═");
@@ -63,9 +63,16 @@ namespace Herencia
 			}
 			Console.Write("╝");
 			
+		 	Console.SetCursorPosition(0, 29);
+		    Console.BackgroundColor = ConsoleColor.White;
+		    Console.ForegroundColor = ConsoleColor.Black;
+		    Console.Write("SELECCIONE UNA DE LAS CUENTAS CON LAS FLECHAS SUBIR Y BAJAR. PRESIONE ENTER PARA VER LOS MOVIMIENTOS.");
+		    Console.ResetColor();
+		    Console.CursorVisible = false;
+			
 		}
 		
-		public void pantallaMovimientos(String tipoCuenta)
+		public void pantallaMovimientos(int indiceTipoCuenta)
 		{
 			Console.Clear();
 			Console.Write("╔");
@@ -88,7 +95,11 @@ namespace Herencia
 			Console.BackgroundColor = ConsoleColor.White;
 			Console.ForegroundColor = ConsoleColor.Black;
 			Console.SetCursorPosition(2, 3);
-			Console.Write("                          M O V I M I E N T O S   D E   L A   {0}                           ", tipoCuenta);
+			if (indiceTipoCuenta == 0){
+				Console.Write("                         M O V I M I E N T O S   D E   L A   {0}                            ", tipoCuenta[indiceTipoCuenta]);
+			} else {
+				Console.Write("                        M O V I M I E N T O S   D E   L A   {0}                         ", tipoCuenta[indiceTipoCuenta]);
+			}
 			Console.ResetColor();
 			Console.Write(" ║");
 			Console.Write("╠");
@@ -124,7 +135,7 @@ namespace Herencia
 			
 		}
 		
-		public bool muestraMovimientos(Cuenta.Movimiento[] movimientos, String[] tipoMovimiento){
+		public bool muestraMovimientos(CuentaBancaria.Movimiento[] movimientos, String[,] tipoMovimiento){
 			Random aleatorioTipoMovimiento = new Random();
 			
 			bool salir = false;
@@ -174,6 +185,8 @@ namespace Herencia
 			    
 			    if(tecla.Key == ConsoleKey.Escape) {
 					salir = true;
+					Console.Clear();
+					pantallaPrincipal();
 			    }
 			    
 			} while (tecla.Key != ConsoleKey.Escape);
@@ -181,7 +194,7 @@ namespace Herencia
 			
 		}
 			
-		private void refrescar(Cuenta.Movimiento[] movimientos, String[] tipoMovimiento, ref int itemActual, int indice, int i){
+		private void refrescar(CuentaBancaria.Movimiento[] movimientos, String[,] tipoMovimiento, ref int itemActual, int indice, int i){
 
 			Console.SetCursorPosition(2, 7 + i );
 			if (itemActual == indice) {
@@ -193,11 +206,11 @@ namespace Herencia
 	            	Console.ForegroundColor = ConsoleColor.Black;
 					Console.Write("│");
 					Console.ForegroundColor = ConsoleColor.Red;
-	            	Console.Write("\t{0}\t\t\t\t\t\t\t\t\t\t   -$ {1,8:N2}", tipoMovimiento[movimientos[indice].tipoMovimiento], movimientos[indice].importe);
+	            	Console.Write("\t{0}\t\t\t\t\t\t\t\t\t\t   -$ {1,8:N2}", tipoMovimiento[movimientos[indice].tipoMovimiento, 1], movimientos[indice].importe);
 				} else if (2 == movimientos[indice].tipoMovimiento || 3 == movimientos[indice].tipoMovimiento ){
 					Console.ForegroundColor = ConsoleColor.Black;
 					Console.Write("{0} │", movimientos[indice].fecha.ToString("g", CultureInfo.CreateSpecificCulture("es-ES")) );
-					Console.Write("\t{0}\t\t\t\t\t\t\t\t\t\t    $ {1,8:N2}", tipoMovimiento[movimientos[indice].tipoMovimiento], movimientos[indice].importe);
+					Console.Write("\t{0}\t\t\t\t\t\t\t\t\t\t    $ {1,8:N2}", tipoMovimiento[movimientos[indice].tipoMovimiento, 1], movimientos[indice].importe);
 				}
 			} else {
 				if (0 == movimientos[indice].tipoMovimiento || 1 == movimientos[indice].tipoMovimiento ){
@@ -206,49 +219,52 @@ namespace Herencia
 	            	Console.ForegroundColor = ConsoleColor.White;
 					Console.Write("│");
 					Console.ForegroundColor = ConsoleColor.Red;
-        			Console.Write("\t{0}\t\t\t\t\t\t\t\t\t\t   -$ {1,8:N2}", tipoMovimiento[movimientos[indice].tipoMovimiento], movimientos[indice].importe);
+        			Console.Write("\t{0}\t\t\t\t\t\t\t\t\t\t   -$ {1,8:N2}", tipoMovimiento[movimientos[indice].tipoMovimiento, 1], movimientos[indice].importe);
     			} else if (2 == movimientos[indice].tipoMovimiento || 3 == movimientos[indice].tipoMovimiento ){
 					Console.ForegroundColor = ConsoleColor.White;
 					Console.Write("{0} │", movimientos[indice].fecha.ToString("g", CultureInfo.CreateSpecificCulture("es-ES")) );
-					Console.Write("\t{0}\t\t\t\t\t\t\t\t\t\t    $ {1,8:N2}", tipoMovimiento[movimientos[indice].tipoMovimiento], movimientos[indice].importe);
+					Console.Write("\t{0}\t\t\t\t\t\t\t\t\t\t    $ {1,8:N2}", tipoMovimiento[movimientos[indice].tipoMovimiento, 1], movimientos[indice].importe);
 				}
 			}
 			Console.ResetColor();
 		}
 		
-		public void seleccionCuenta(Cuenta oCuenta){
+		public bool seleccionCuenta(CajaAhorro oCajaAhorro, CuentaCorriente oCuentaCorriente, ref int itemActual, ref bool salirMovimientos){
 			string[] menuItems = { " CAJA AHORRO ", " CUENTA CORRIENTE " };
-			bool salir = false;
-			short itemActual = 0;
-						
+			bool salirCuentas = true;
+			bool salirAplicacion = false;
+			
 			ConsoleKeyInfo tecla;
 			
 			do
 			{
-			   
-			   	Console.SetCursorPosition(1, 5);
-				  
+				
+			  	Console.SetCursorPosition(1, 5);
+				 
   		    	for (int i = 0; i < menuItems.Length; i++) {
 			   		Console.SetCursorPosition(2, 5 + i );
 			        if (itemActual == i) {
 			   			Console.BackgroundColor = ConsoleColor.White;
 						Console.ForegroundColor = ConsoleColor.Black;
 			            Console.Write(menuItems[i]);
-			            Console.SetCursorPosition(106, 5 + i );
-			            Console.Write("$ {0,8:N2}", oCuenta.obtieneSaldo());
+			            Console.SetCursorPosition(104, 5 + i );
+			            if (itemActual == 0) {
+			            	Console.Write("$ {0,11:N2}", oCajaAhorro.obtieneSaldo());
+			            } else {
+			            	Console.Write("$ {0,11:N2}", oCuentaCorriente.obtieneSaldo());
+			            }
 			        } else {
 			   			Console.WriteLine(menuItems[i]);
-			            Console.SetCursorPosition(106, 5 + i );
-			            Console.Write("$ {0,8:N2}", oCuenta.obtieneSaldo());
+			            Console.SetCursorPosition(104, 5 + i );
+			            if (itemActual == 0) {
+			            	Console.Write("$ {0,11:N2}", oCuentaCorriente.obtieneSaldo());
+			            } else {
+			            	Console.Write("$ {0,11:N2}", oCajaAhorro.obtieneSaldo() );
+			            }
 			        }
 			   		Console.ResetColor();
 			    }
-			    Console.SetCursorPosition(0, 29);
-			    Console.BackgroundColor = ConsoleColor.White;
-			    Console.ForegroundColor = ConsoleColor.Black;
-			    Console.Write("SELECCIONE UNA DE LAS CUENTAS CON LAS FLECHAS SUBIR Y BAJAR. PRESIONE ENTER PARA VER LOS MOVIMIENTOS.");
-			    Console.ResetColor();
-			    Console.CursorVisible = false;
+			   
 			    tecla = Console.ReadKey(true);
 			
 			    if (tecla.Key == ConsoleKey.DownArrow) {
@@ -263,22 +279,127 @@ namespace Herencia
 			        }
 			    }
 			    
+			    switch (tecla.Key) {
+			    	case ConsoleKey.Enter:
+											switch (itemActual) {
+													case 0 :
+														Console.Clear();
+														pantallaMovimientos(itemActual);
+														salirMovimientos = muestraMovimientos(oCajaAhorro.obtieneMovimientos(), oCajaAhorro.obtieneTipoMovimiento());
+														break;
+													case 1 :
+														Console.Clear();
+														pantallaMovimientos(itemActual);
+														salirMovimientos = muestraMovimientos(oCuentaCorriente.obtieneMovimientos(), oCuentaCorriente.obtieneTipoMovimiento());
+														break;
+													default:
+														
+														break;
+												}
+			    							break;
+			    		case ConsoleKey.Escape: 
+									    	salirAplicacion = preguntaSalir();
+									    	
+									    	if (salirAplicacion == false) {
+									    		limpiaSalir();
+									    	} else {
+									    		salirCuentas = false;
+									    	}
+											break;
+			    }
+			} while (salirCuentas);
+			return salirAplicacion;
+		}
+		
+		private bool preguntaSalir(){
+			string[] menuItems = { "  SI  ", "  NO  " };
+			Console.BackgroundColor = ConsoleColor.Blue;
+			Console.SetCursorPosition((Console.WindowWidth / 2) - 15, (Console.WindowHeight / 2) - 3);
+			Console.WriteLine("                            ");
+			Console.SetCursorPosition((Console.WindowWidth / 2) - 15, (Console.WindowHeight / 2) - 2);
+			Console.WriteLine("       ¿DESEA SALIR?        ");
+			Console.SetCursorPosition((Console.WindowWidth / 2) - 15, (Console.WindowHeight / 2) - 1);
+			Console.WriteLine("                            ");
+			Console.SetCursorPosition((Console.WindowWidth / 2) - 15, (Console.WindowHeight / 2));
+			Console.Write("  {0}         {1}     ", menuItems[0], menuItems[1]);
+			
+			Console.SetCursorPosition((Console.WindowWidth / 2) - 15, (Console.WindowHeight / 2) + 1);
+			Console.WriteLine("                            ");
+			
+			bool salir = false;
+			int itemActual = 1;
+						
+			ConsoleKeyInfo tecla;
+			
+			do
+			{
+			   
+			   	Console.SetCursorPosition(1, 5);
+				  
+  		    	for (int i = 0; i < menuItems.Length; i++) {
+			   		
+			        if (itemActual == i) {
+			   			Console.BackgroundColor = ConsoleColor.White;
+						Console.ForegroundColor = ConsoleColor.Black;
+						if (itemActual == 0){
+							Console.SetCursorPosition((Console.WindowWidth / 2) - 12, (Console.WindowHeight / 2));
+			            	Console.Write(menuItems[0]);
+						} else {
+							Console.SetCursorPosition((Console.WindowWidth / 2) + 4, (Console.WindowHeight / 2));
+							Console.Write(menuItems[1]);
+						}
+			        } else {
+			   			Console.BackgroundColor = ConsoleColor.Blue;
+			   				Console.ForegroundColor = ConsoleColor.White;
+			   			if (itemActual == 1){
+			   				Console.SetCursorPosition((Console.WindowWidth / 2) - 12, (Console.WindowHeight / 2));
+			   				Console.Write(menuItems[0]);
+						} else {
+			   				Console.SetCursorPosition((Console.WindowWidth / 2) + 4, (Console.WindowHeight / 2));
+			   				Console.Write(menuItems[1]);
+						}
+			   		}
+			    }
+			    
+			    Console.CursorVisible = false;
+			    tecla = Console.ReadKey(true);
+			
+			    if (tecla.Key == ConsoleKey.LeftArrow) {
+			        itemActual++;
+			        if (itemActual > menuItems.Length - 1) {
+			        	itemActual = 0;
+			        }
+			    } else if (tecla.Key == ConsoleKey.RightArrow) {
+			        itemActual--;
+			        if (itemActual < 0) {
+			        	itemActual = Convert.ToInt16(menuItems.Length - 1);
+			        }
+			    }
+			    
 			    if(tecla.Key == ConsoleKey.Enter) {
 					switch (itemActual) {
 								case 0 :
-									Console.Clear();
-									pantallaMovimientos(tipoCuenta[itemActual]);
+									salir = true;
 									break;
 								case 1 :
-									Console.Clear();
-//									diasLaborablesEntreFechas();
+									salir = false;
 									break;
 								default:
 									Console.WriteLine("Ha ingresado una opción incorrecta.");
 									break;
 							}
-			    }
+			    } 
 			} while (tecla.Key != ConsoleKey.Enter);
+			return salir;
+		}
+		
+		private void limpiaSalir(){
+			Console.ResetColor();
+			for (int i = -3; i < 3; i++) {
+				Console.SetCursorPosition((Console.WindowWidth / 2) - 15, (Console.WindowHeight / 2) + i);
+			    Console.WriteLine("                            ");
+			}
+			
 		}
 	}
 }
